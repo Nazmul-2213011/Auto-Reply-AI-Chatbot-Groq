@@ -20,21 +20,9 @@ def get_groq_response(user_input):
             "role": "user",
             "content": user_input,
         }],
-        model="llama3-8b-8192",  # Make sure the model ID is correct
+        model="llama3-8b-8192",
     )
-    response = chat_completion.choices[0].message.content.strip()
-    
-    # Ensure the response ends with a dot and is one line
-    if response and not response.endswith('.'):
-        response = response + '.'
-
-    # Clean up any trailing words after a dot
-    if '.' in response:
-        # Find the first period and cut off everything after it
-        response = response.split('.')[0] + '.'
-
-    # Remove newlines and return the response as one line
-    return response.replace('\n', ' ').replace('\r', '')
+    return chat_completion.choices[0].message.content
 
 def automate_reply():
     # Initial click to activate the area
@@ -42,9 +30,29 @@ def automate_reply():
     time.sleep(1)
 
     while True:
-        # Select and copy text from the screen
+        # Select and copy text
         pyautogui.moveTo(720, 172)
         pyautogui.mouseDown()
         pyautogui.moveTo(726, 785)
         pyautogui.mouseUp()
         pyautogui.hotkey('ctrl', 'c')
+        time.sleep(1)
+
+        copied_text = pyperclip.paste()
+        print("Copied Text: ", copied_text)
+
+        # Get response
+        response = get_groq_response(copied_text)
+
+        # Paste response
+        pyautogui.click(775, 900)
+        pyautogui.typewrite(response[:100], interval=0.1)
+
+        # Submit reply
+        pyautogui.click(1414, 959)
+
+        # Delay only after submission
+        time.sleep(5)
+
+if __name__ == "__main__":
+    automate_reply()
